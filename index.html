@@ -154,14 +154,30 @@
             z-index: 3;
         }
 
+        #speaker-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 5px;
+            margin: 0;
+        }
+
         #speaker-tag {
             font-size: 0.95rem;
             font-weight: bold;
             color: #a39cb4;
             letter-spacing: 2px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 5px;
             margin: 0;
+        }
+
+        #ending-tag {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #ff79c6;
+            letter-spacing: 1px;
+            margin: 0;
+            display: none;
         }
 
         #text-box {
@@ -244,7 +260,10 @@
     <img id="character-sprite" src="" alt="character">
     
     <div id="interface-layer">
-        <p id="speaker-tag"></p>
+        <div id="speaker-container">
+            <p id="speaker-tag"></p>
+            <p id="ending-tag"></p>
+        </div>
         <div id="text-box"></div>
         <div class="choices-container" id="choices"></div>
     </div>
@@ -253,12 +272,12 @@
 <div id="credits-screen">
     <div id="credits-text"></div>
 </div>
-
 <script>
     let internalHopeScore = 0;
     let currentStep = 'start';
     let audioCtx = null;
     let hasClip = true;
+    let activeHumGain = null;
 
     function initAudio() {
         if (!audioCtx) {
@@ -316,6 +335,56 @@
         filter.connect(gain);
         gain.connect(audioCtx.destination);
         noise.start();
+    }
+
+    function playHitSound() {
+        if (!audioCtx) return;
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(90, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.12);
+    }
+
+    function playKnockSound() {
+        if (!audioCtx) return;
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(140, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(70, audioCtx.currentTime + 0.05);
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.15);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+    }
+
+    function startTVHum() {
+        if (!audioCtx || activeHumGain) return;
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(60, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        activeHumGain = gain;
+    }
+
+    function stopTVHum() {
+        if (activeHumGain) {
+            try { activeHumGain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3); } catch(e){}
+            activeHumGain = null;
+        }
     }
     const story = {
         start: {
@@ -383,7 +452,7 @@
         },
         school_bully_clip: {
             speaker: "???",
-            text: "'Hey, new girl,' one shouts, reaching out aggressively. 'What is that pathetic star clip in your hair? Give it here right now!' Before you can move, a rough hand rips it out, pulling your strands. They crowd nearby, flashing peace signs and taking a cheerful photo together, completely ignoring your tears. Then—a sharp *snap*. They crush it into pieces.",
+            text: "'Hey, new girl,' one shouts, reaching out aggressively. 'What is that pathetic star clip in your hair? Give it here right now!' Before you can move, a rough hand rips it out, pulling your strands. They crowd nearby, flashing peace signs and taking a loud, cheerful photo together, completely ignoring your tears. Then—a sharp *snap*. They intentionally crush it into pieces, throwing it onto the floor like trash.",
             image: "classmates.jpg",
             character: "hero-school2.png",
             sound: "snap",
@@ -391,7 +460,7 @@
         },
         school_bully_no_clip: {
             speaker: "???",
-            text: "'Look at her hair,' one sneers, laughing loudly. 'You look so messy and disgusting! Did you sleep on the street?' Another grabs your backpack from the desk, ripping the zipper open. 'Show us your bag! Let's see what trash you brought from your old town!' They dump your things on the floor, kicking your textbooks away.",
+            text: "'Look at her hair,' one sneers, laughing loudly. 'You look so messy and disgusting! Did you sleep on the street?' Another grabs your backpack from the desk, ripping the zipper open. 'Show us your bag! Let's see what trash you brought from your old town!' They dump all your things onto the floor, kicking your textbooks away.",
             image: "classroom.jpg",
             character: "hero-school2.png",
             choices: [{ text: "Stare at your ruined belongings.", next: "school_cry", hope: 0 }]
@@ -410,6 +479,7 @@
             text: "It escalates fast. Harsh shoves turn into heavy, painful blows. When they finally stop and leave, the room is dead silent. You lie broken and exhausted on the cold floor of the classroom, uniform torn, limbs aching. The bright sun outside feels like a complete insult to your pain.",
             image: "classroom.jpg",
             character: "hero-school4.png",
+            sound: "hit",
             choices: [
                 { text: "Slowly force yourself up from the ground.", next: "walk_home", hope: 0 }
             ]
@@ -441,8 +511,9 @@
             image: "night.jpg",
             character: "hero-school-walk2.png",
             choices: [
-                { text: "Let the silent anger take over. Swallow all the remaining pills.", next: "eval_ending", hope: -5 },
-                { text: "Lock the door. Lay down on the tatami and give up on food.", next: "eval_ending", hope: -1 },
+                { text: "Let the silent anger take over. Fasten the rope to the ceiling lamp.", next: "eval_ending", hope: -5 },
+                { text: "Swallow all the remaining prescription pills.", next: "eval_ending", hope: -1 },
+                { text: "Lock the door. Lay down on the tatami and give up on food.", next: "eval_ending", hope: 1 },
                 { text: "Look at the flickering TV. Decide you don't care about them anymore.", next: "eval_ending", hope: 3 }
             ]
         },
@@ -451,7 +522,8 @@
             text: "The television continues to flicker with static, humming a low, endless tune in the dark room. The house is completely silent; your parents never came to check. Hanging beneath the quiet chandelier, a shadow stands motionless on the tatami mats—visible only from the waist down, fading away into the blue cold.",
             image: "night.jpg",
             character: "hero-hang.png",
-            zoom: true,
+            sound: "tvhum",
+            endingNum: "3 / 5",
             choices: [
                 { text: "Close your eyes.", next: "TRIGGER_CREDITS", hope: 0 }
             ]
@@ -461,7 +533,8 @@
             text: "The static from the CRT screen illuminates the empty medicine bottle rolling across the floor. You feel cold, your thoughts slowing down as the dark room slips away. Nobody noticed. Nobody called. The shadows swallow the washitsu completely.",
             image: "night.jpg",
             character: "hero-thinking.png",
-            zoom: false,
+            sound: "tvhum",
+            endingNum: "2 / 5",
             choices: [
                 { text: "Let go.", next: "TRIGGER_CREDITS", hope: 0 }
             ]
@@ -471,7 +544,8 @@
             text: "Days blur into nights in the locked room. The ache of hunger slowly turns into a numb, hollow quiet. Your parents never ask, always busy counting coins. The television static hums an endless lullaby as your body grows completely cold on the tatami.",
             image: "night.jpg",
             character: "hero-morning.png",
-            zoom: false,
+            sound: "tvhum",
+            endingNum: "1 / 5",
             choices: [
                 { text: "Fade away.", next: "TRIGGER_CREDITS", hope: 0 }
             ]
@@ -481,7 +555,7 @@
             text: "You look at the empty room, the cold television, and the marks on your hands. Suddenly, something inside snaps. Let them laugh. Let them lock the doors. 'Let them think I'm crazy, at least I am happy!' You pull yourself up, completely ignoring their twisted world.",
             image: "morning.jpg",
             character: "hero-morning.png",
-            zoom: false,
+            endingNum: "4 / 5",
             choices: [
                 { text: "Step into your own tomorrow.", next: "TRIGGER_CREDITS", hope: 0 }
             ]
@@ -491,7 +565,8 @@
             text: "Suddenly, a loud knock echoes through the house. You open the front door, shivering. Standing in the morning light is Saigo. She took the train from the other city just to find you. As she hugs you tightly, you realize she is your happiness, your only true reason to stay.",
             image: "morning.jpg",
             character: "hero-saigo.png",
-            zoom: false,
+            sound: "knock",
+            endingNum: "5 / 5 (SECRET)",
             choices: [
                 { text: "Hold her tight. The dawn is finally warm.", next: "TRIGGER_CREDITS", hope: 0 }
             ]
@@ -513,33 +588,18 @@
         const sceneImg = document.getElementById("scene-background");
         const charImg = document.getElementById("character-sprite");
         
-        sceneImg.style.opacity = 0;
-        charImg.style.opacity = 0;
-        
         if (shouldZoom) {
             charImg.classList.add("hang-crop");
         } else {
             charImg.classList.remove("hang-crop");
         }
         
-        setTimeout(() => {
-            sceneImg.src = sceneSrc;
-            charImg.src = charSrc;
-            
-            let loadedCount = 0;
-            const checkLoad = () => {
-                loadedCount++;
-                if (loadedCount === 2) {
-                    sceneImg.style.opacity = 1;
-                    charImg.style.opacity = 1;
-                }
-            };
-            
-            sceneImg.onload = checkLoad;
-            charImg.onload = checkLoad;
-            sceneImg.onerror = checkLoad;
-            charImg.onerror = checkLoad;
-        }, 300);
+        // Исправленный движок: текст больше не зависит от скорости загрузки файлов
+        sceneImg.src = sceneSrc;
+        charImg.src = charSrc;
+        
+        sceneImg.style.opacity = 1;
+        charImg.style.opacity = 1;
     }
 
     function runCreditsSequence(endingType) {
@@ -580,6 +640,7 @@
                             localStorage.removeItem('dawn_saved_hope');
                             localStorage.removeItem('dawn_saved_clip');
                             internalHopeScore = 0;
+                            stopTVHum();
                             document.getElementById("main-menu").style.display = "flex";
                             document.getElementById("main-menu").style.opacity = 1;
                             creditsScreen.style.opacity = 0;
@@ -605,17 +666,30 @@
     }
 
     function handleSoundTrigger(soundType) {
-        if (!soundType) return;
+        if (!soundType) {
+            stopTVHum();
+            return;
+        }
         initAudio();
         if (soundType === "snap") {
+            stopTVHum();
             playSnapSound();
         } else if (soundType === "snow") {
+            stopTVHum();
             let count = 0;
             let interval = setInterval(() => {
                 playSnowStep();
                 count++;
                 if (count >= 3) clearInterval(interval);
             }, 400);
+        } else if (soundType === "hit") {
+            stopTVHum();
+            playHitSound();
+        } else if (soundType === "knock") {
+            stopTVHum();
+            playKnockSound();
+        } else if (soundType === "tvhum") {
+            startTVHum();
         }
     }
 
@@ -635,6 +709,7 @@
     }
 
     function stopToMenu() {
+        stopTVHum();
         document.getElementById("fullscreen-viewport").style.opacity = 0;
         setTimeout(() => {
             document.getElementById("fullscreen-viewport").style.display = "none";
@@ -715,6 +790,16 @@
         if (step.action) step.action();
 
         document.getElementById("speaker-tag").innerText = step.speaker;
+        
+        // Показываем плашку "Ending X/5", если это финал
+        const endingTag = document.getElementById("ending-tag");
+        if (step.endingNum) {
+            endingTag.innerText = "Ending " + step.endingNum;
+            endingTag.style.display = "block";
+        } else {
+            endingTag.style.display = "none";
+        }
+
         const choicesContainer = document.getElementById("choices");
         choicesContainer.innerHTML = ""; 
         
