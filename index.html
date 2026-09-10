@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Dawn We Missed</title>
+    <title>dawn — by lookoooooooo</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background: linear-gradient(180deg, #141624 0%, #282a3a 50%, #4a4154 100%);
-            color: #d1d2dd;
+            background: linear-gradient(180deg, #0d0f1a 0%, #1b1c2e 60%, #332a3c 100%);
+            color: #c9cad6;
             font-family: 'Courier New', Courier, monospace;
             display: flex;
             justify-content: center;
@@ -21,45 +21,64 @@
         #game-container {
             width: 85%;
             max-width: 650px;
-            background: rgba(15, 16, 26, 0.85);
+            background: rgba(10, 11, 20, 0.92);
             padding: 35px;
-            border-radius: 6px;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 4px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        #image-box {
+            width: 100%;
+            height: 220px;
+            border-radius: 2px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background-color: #05060b;
+        }
+
+        #scene-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
         }
 
         #text-box {
-            font-size: 1.05rem;
+            font-size: 1.02rem;
             line-height: 1.7;
-            min-height: 140px;
-            margin-bottom: 35px;
-            color: #e2e4f0;
+            min-height: 130px;
+            color: #dcdde8;
         }
 
         .choices-container {
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 12px;
         }
 
         .btn-choice {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            color: #b9bad1;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #b2b3c4;
             padding: 14px;
-            border-radius: 4px;
+            border-radius: 2px;
             cursor: pointer;
             text-align: left;
             font-family: inherit;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
             transition: all 0.4s ease;
         }
 
         .btn-choice:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.05);
             color: #ffffff;
-            border-color: #928ca3;
+            border-color: #827c94;
             padding-left: 22px;
         }
     </style>
@@ -67,6 +86,9 @@
 <body>
 
 <div id="game-container">
+    <div id="image-box">
+        <img id="scene-image" src="" alt="scene background">
+    </div>
     <div id="text-box"></div>
     <div class="choices-container" id="choices"></div>
 </div>
@@ -76,66 +98,76 @@
 
     const story = {
         start: {
-            text: "4:32 AM. The Yamanote line hasn't started yet, but the air outside feels static, almost frozen. Your phone screen blinks in the dark. Nobody called. Do you get up?",
+            text: "4:32 AM. The cold blue light of dawn creeps through the small gap in your curtains. Your phone screen remains completely dark. Another day has found you, even though you didn't ask it to. Do you open your eyes?",
+            image: "https://shutterstock.com",
             choices: [
-                { text: "Take a long, slow breath. Get out of bed.", next: "room_look", hope: 1 },
-                { text: "Ignore it. Let the cold room swallow you.", next: "stay_in_bed", hope: 0 }
+                { text: "Take a deep, trembling breath and sit up.", next: "room_look", hope: 1 },
+                { text: "Keep them closed. Pretend you aren't here.", next: "stay_in_bed", hope: 0 }
             ]
         },
         stay_in_bed: {
-            text: "The ceiling pattern becomes your entire world. Outside, you hear the distant, repetitive chirp of a Japanese pedestrian traffic light. It sounds incredibly lonely. Time loses its meaning.",
+            text: "The silence in the room is heavy. From somewhere down the street, the distant chime of a vending machine hums a low, lonely tune. Time drifts away without your permission.",
+            image: "https://shutterstock.com",
             choices: [
-                { text: "Force your numb feet onto the cold floor.", next: "room_look", hope: 0 }
+                { text: "Force your feet onto the cold tatami floor.", next: "room_look", hope: 0 }
             ]
         },
         room_look: {
-            text: "Your school uniform hangs by the window, looking like a silhouette of someone you used to know. The faint smell of old tatami and dust fills the silence. Your school bag lies empty on the desk.",
+            text: "Your school uniform is hanging on the closet door, looking sharp, empty, and heavy. The air smells faint, like old papers and yesterday's rain. Your backpack is waiting by the desk.",
+            image: "https://squarespace-cdn.com",
             choices: [
-                { text: "Pack your books. Put on the mask.", next: "train_station", hope: 0 },
-                { text: "Stare at a small, dried flower on your shelf.", next: "flower_stare", hope: 1 }
+                { text: "Pack your school materials. Put on your usual face.", next: "train_station", hope: 0 },
+                { text: "Notice a small origami crane you folded last spring.", next: "crane_stare", hope: 1 }
             ]
         },
-        flower_stare: {
-            text: "It's a forgotten souvenir from a brief summer day when you laughed. Your chest aches slightly, but it's a real feeling, not just emptiness.",
+        crane_stare: {
+            text: "The paper is slightly dusty and faded. You remember the day you made it—a day when the air felt warmer. Your chest feels tight, but the memory lingers like a tiny spark.",
+            image: "https://squarespace-cdn.com",
             choices: [
-                { text: "Put it back gently and head to the station.", next: "train_station", hope: 0 }
+                { text: "Leave it on the shelf and walk out the door.", next: "train_station", hope: 0 }
             ]
         },
         train_station: {
-            text: "The platform is covered in a thick morning fog. Students in identical uniforms stand like ghosts. The warning chime rings out—a melancholy melody signaling the arrival of the train. You stand right near the yellow line.",
+            text: "The station platform is engulfed in a thick, silent fog. Hundreds of students stand perfectly still, like shadows waiting for a train. The yellow line beneath your shoes feels like a boundary between two worlds. The signal bells begin to echo.",
+            image: "https://tvtropes.org",
             choices: [
-                { text: "Step forward into the crowded car. Accept the routine.", next: "school_routine", hope: 0 },
-                { text: "Look up at the sky. Notice a tiny patch of blue breaking through.", next: "sky_notice", hope: 1 }
+                { text: "Board the train. Let the crowd carry you away.", next: "school_routine", hope: 0 },
+                { text: "Look past the tracks. Notice a tiny green plant growing through the concrete.", next: "plant_notice", hope: 1 }
             ]
         },
-        sky_notice: {
-            text: "The clouds are heavy, but they are moving. The wind feels cold against your face, reminding you that you are still here, still breathing.",
+        plant_notice: {
+            text: "It is fragile, damp with morning dew, but it is standing against the wind. For a single second, the weight in your mind feels a fraction lighter.",
+            image: "https://tvtropes.org",
             choices: [
-                { text: "Board the train with a slight sigh.", next: "school_routine", hope: 0 }
+                { text: "Step into the train car as the doors open.", next: "school_routine", hope: 0 }
             ]
         },
         school_routine: {
-            text: "Hours blur together. The teacher's voice sounds like it's drifting from underwater. During the break, you sit alone at your desk, tracing the wooden grain. Nobody looks your way. It feels like you are becoming transparent.",
+            text: "The entire day passes like an old, scratched VHS tape. Voices blur into static. You sit by the window, watching the gray clouds move across the Tokyo sky. Nobody speaks to you. You feel completely invisible, fading into the background.",
+            image: "https://squarespace-cdn.com",
             choices: [
-                { text: "Go to the rooftop during the final sunset.", next: "rooftop_climax", hope: 0 }
+                { text: "Walk up to the school rooftop as the sun begins to set.", next: "rooftop_climax", hope: 0 }
             ]
         },
         rooftop_climax: {
-            text: "The sky over Tokyo is bleeding a deep, industrial orange. The wind up here is violent, pulling at your hair. You look down at the tiny, distant world below. Everything feels completely out of reach. This is the edge.",
+            text: "The evening sky is bleeding a deep, industrial violet. The wind at the edge is fierce, pulling at your uniform. Below you, the vast city looks beautiful, busy, and completely out of reach. You stand at the absolute limit of your strength.",
+            image: "https://pinimg.com",
             choices: [
-                { text: "Check your phone one last time.", next: "eval_ending", hope: 0 }
+                { text: "Pull out your phone for one last glance.", next: "eval_ending", hope: 0 }
             ]
         },
         ending_tragedy: {
-            text: "The screen is blank. The silence is absolute. The orange horizon fades into total darkness as you let go.",
+            text: "The screen is silent. No messages. No signs. The violet horizon quietly surrenders to a dark, endless night as you step forward into the quiet.",
+            image: "https://pinimg.com",
             choices: [
-                { text: "Restart the cycle.", next: "reset_game", hope: 0 }
+                { text: "Restart the dawn.", next: "reset_game", hope: 0 }
             ]
         },
         ending_hope: {
-            text: "Suddenly, a soft chime echoes. An old notification pops up from a distant friend across the ocean: 'Hey, I know it's early over there, but I saw something that reminded me of you. Are you awake?' Your fingers tremble. The sunrise slowly breaks over the skyline.",
+            text: "Suddenly, the phone vibrates. A notification appears from an old friend who moved across the ocean: 'Hey... I know it's late there, but I couldn't sleep. I missed talking to you. Are you doing okay?' The text blurs through your tears. The sky begins to break into a warm, gold horizon.",
+            image: "https://pinimg.com",
             choices: [
-                { text: "Type a reply. Stay.", next: "reset_game", hope: 0 }
+                { text: "Hold the phone tight. Stay for the morning.", next: "reset_game", hope: 0 }
             ]
         }
     };
@@ -149,6 +181,17 @@
         } else if (typeof fnCallback == 'function') {
             setTimeout(fnCallback, 400);
         }
+    }
+
+    function changeImage(src) {
+        const img = document.getElementById("scene-image");
+        img.style.opacity = 0;
+        setTimeout(() => {
+            img.src = src;
+            img.onload = () => {
+                img.style.opacity = 1;
+            };
+        }, 300);
     }
 
     function renderStep(stepKey) {
@@ -165,6 +208,8 @@
         const choicesContainer = document.getElementById("choices");
         choicesContainer.innerHTML = ""; 
         
+        changeImage(step.image);
+        
         typeWriter(step.text, 0, function() {
             step.choices.forEach(choice => {
                 const button = document.createElement("button");
@@ -179,7 +224,7 @@
         });
     }
 
-    /* ゲームの開始 */
+    /* 挿絵付きゲームの開始 */
     renderStep('start');
 </script>
 
