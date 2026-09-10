@@ -1,478 +1,187 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✧ nura ✧</title>
+    <title>The Dawn We Missed</title>
     <style>
-        @import url('https://googleapis.com');
-
         body {
-            background-color: #1e351e; 
-            background-image: radial-gradient(#152515 15%, transparent 16%);
-            background-size: 16px 16px;
-            font-family: 'Courier Prime', 'Courier', monospace;
-            color: #1b1008;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            background: linear-gradient(180deg, #141624 0%, #282a3a 50%, #4a4154 100%);
+            color: #d1d2dd;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 85%;
+            max-width: 650px;
+            background: rgba(15, 16, 26, 0.85);
+            padding: 35px;
+            border-radius: 6px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        #text-box {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            min-height: 140px;
+            margin-bottom: 35px;
+            color: #e2e4f0;
+        }
+
+        .choices-container {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            box-sizing: border-box;
+            gap: 14px;
         }
 
-        .window {
-            background: #f7e3af;
-            border: 3px solid #6b1d1d;
-            box-shadow: 6px 6px 0px #351010;
-            max-width: 600px;
-            width: 100%;
-            margin-top: 40px;
-            image-rendering: pixelated;
-            display: none;
-        }
-
-        .window-header {
-            background: #872525;
-            color: #ffe6bd;
-            padding: 8px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 14px;
-            border-bottom: 3px solid #6b1d1d;
-        }
-
-        .window-dots span {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background: #f7e3af;
-            border: 2px solid #6b1d1d;
-            margin-left: 4px;
+        .btn-choice {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #b9bad1;
+            padding: 14px;
+            border-radius: 4px;
             cursor: pointer;
-        }
-
-        .window-body {
-            padding: 20px;
-            line-height: 1.5;
-        }
-
-        h1 {
-            font-size: 28px;
-            margin-top: 0;
-            margin-bottom: 5px;
-            color: #6b1d1d;
-        }
-
-        .slogan {
-            font-size: 16px;
-            font-weight: bold;
-            color: #4a341e;
-            margin-bottom: 20px;
-        }
-
-        marquee {
-            background: #2b3d2b;
-            color: #e3ffd4;
-            border: 2px solid #6b1d1d;
-            padding: 5px;
-            margin-bottom: 20px;
-            font-size: 13px;
-        }
-
-        .search-container {
-            margin: 15px 0;
-            position: relative;
-        }
-
-        .search-box {
-            display: flex;
-            gap: 8px;
-        }
-
-        .search-input {
-            flex-grow: 1;
-            padding: 8px;
-            border: 3px solid #6b1d1d;
-            background: #fffcf2;
-            color: #1b1008;
+            text-align: left;
             font-family: inherit;
-            font-size: 14px;
+            font-size: 0.95rem;
+            transition: all 0.4s ease;
         }
 
-        .search-input:focus {
-            outline: none;
-            background: #ffffff;
-        }
-
-        .suggestions-box {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: #fffcf2;
-            border: 3px solid #6b1d1d;
-            z-index: 10;
-            display: none;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.3);
-        }
-
-        .suggestion-item {
-            padding: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            color: #1b1008;
-        }
-
-        .suggestion-item:hover {
-            background: #872525;
-            color: #ffe6bd;
-        }
-
-        .btn {
-            display: inline-block;
-            background: #f7b859;
-            border: 2px solid #6b1d1d;
-            padding: 8px 16px;
-            color: #2b1100;
-            text-decoration: none;
-            font-weight: bold;
-            box-shadow: 3px 3px 0px #6b1d1d;
-            cursor: pointer;
-            margin-right: 10px;
-            font-size: 13px;
-            text-align: center;
-        }
-
-        .btn:active {
-            box-shadow: 0px 0px 0px #6b1d1d;
-            transform: translate(3px, 3px);
-        }
-
-        .status-bar {
-            border-top: 2px dashed #6b1d1d;
-            margin-top: 20px;
-            padding-top: 10px;
-            font-size: 12px;
-            display: flex;
-            justify-content: space-between;
-            color: #4a341e;
-        }
-
-        #reg-window {
-            display: block;
-            max-width: 400px;
-            margin-top: 10vh;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .input-text {
-            width: 100%;
-            padding: 8px;
-            border: 3px solid #6b1d1d;
-            box-sizing: border-box;
-            font-family: inherit;
-            font-size: 14px;
-            background: #fffcf2;
-        }
-
-        .avatar-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 8px;
-            margin-top: 5px;
-            background: #fffcf2;
-            padding: 8px;
-            border: 2px solid #6b1d1d;
-        }
-
-        .avatar-option {
-            font-size: 24px;
-            text-align: center;
-            cursor: pointer;
-            padding: 4px;
-            border: 2px solid transparent;
-        }
-
-        .avatar-option:hover {
-            background: #f7b859;
-        }
-
-        .avatar-option.selected {
-            border-color: #6b1d1d;
-            background: #872525;
-        }
-
-        #profile-widget {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #f7e3af;
-            border: 3px solid #6b1d1d;
-            box-shadow: 4px 4px 0px #351010;
-            padding: 10px;
-            display: none;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            z-index: 100;
-        }
-
-        #profile-widget:hover {
-            background: #fffcf2;
-        }
-
-        #widget-avatar {
-            font-size: 28px;
-        }
-
-        #widget-name {
-            font-weight: bold;
-            font-size: 13px;
-            color: #6b1d1d;
-        }
-
-        #edit-window {
-            max-width: 400px;
-            position: fixed;
-            top: 15vh;
-            z-index: 101;
-        }
-
-        .user-info-card {
-            background: #f7b859;
-            border: 2px dashed #6b1d1d;
-            padding: 12px;
-            margin-top: 15px;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .user-info-avatar {
-            font-size: 42px;
-        }
-
-        .user-info-text {
-            font-size: 13px;
-        }
-
-        .user-info-name {
-            font-weight: bold;
-            margin-bottom: 4px;
-            color: #6b1d1d;
+        .btn-choice:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            border-color: #928ca3;
+            padding-left: 22px;
         }
     </style>
 </head>
 <body>
 
-    <div id="profile-widget" onclick="openEdit()">
-        <div id="widget-avatar">🍒</div>
-        <div id="widget-name">Guest</div>
-    </div>
+<div id="game-container">
+    <div id="text-box"></div>
+    <div class="choices-container" id="choices"></div>
+</div>
 
-    <div id="reg-window" class="window">
-        <div class="window-header">
-            <span class="window-title">sign_up.exe</span>
-            <div class="window-dots"><span></span><span></span><span></span></div>
-        </div>
-        <div class="window-body">
-            <div class="form-group">
-                <label>username:</label>
-                <input type="text" id="reg-username" class="input-text" value="lookooooooo">
-            </div>
-            <div class="form-group">
-                <label>bio:</label>
-                <input type="text" id="reg-bio" class="input-text" value="just another internet surfer">
-            </div>
-            <div class="form-group">
-                <label>avatar:</label>
-                <div class="avatar-grid" id="reg-avatar-grid"></div>
-            </div>
-            <div style="margin-top: 20px; text-align: right;">
-                <button class="btn" onclick="saveRegistration()">submit</button>
-            </div>
-        </div>
-    </div>
+<script>
+    let internalHopeScore = 0;
 
-    <div id="main-window" class="window">
-        <div class="window-header">
-            <span class="window-title">nura.exe</span>
-            <div class="window-dots"><span></span><span></span><span></span></div>
-        </div>
-        <div class="window-body">
-            <marquee scrollamount="4">✦ 一癖あるインターネット ✦ welcome to nura ✦ 一癖あるインターネット ✦</marquee>
-            
-            <h1>nura</h1>
-            <div class="slogan">一癖あるインターネット</div>
+    const story = {
+        start: {
+            text: "4:32 AM. The Yamanote line hasn't started yet, but the air outside feels static, almost frozen. Your phone screen blinks in the dark. Nobody called. Do you get up?",
+            choices: [
+                { text: "Take a long, slow breath. Get out of bed.", next: "room_look", hope: 1 },
+                { text: "Ignore it. Let the cold room swallow you.", next: "stay_in_bed", hope: 0 }
+            ]
+        },
+        stay_in_bed: {
+            text: "The ceiling pattern becomes your entire world. Outside, you hear the distant, repetitive chirp of a Japanese pedestrian traffic light. It sounds incredibly lonely. Time loses its meaning.",
+            choices: [
+                { text: "Force your numb feet onto the cold floor.", next: "room_look", hope: 0 }
+            ]
+        },
+        room_look: {
+            text: "Your school uniform hangs by the window, looking like a silhouette of someone you used to know. The faint smell of old tatami and dust fills the silence. Your school bag lies empty on the desk.",
+            choices: [
+                { text: "Pack your books. Put on the mask.", next: "train_station", hope: 0 },
+                { text: "Stare at a small, dried flower on your shelf.", next: "flower_stare", hope: 1 }
+            ]
+        },
+        flower_stare: {
+            text: "It's a forgotten souvenir from a brief summer day when you laughed. Your chest aches slightly, but it's a real feeling, not just emptiness.",
+            choices: [
+                { text: "Put it back gently and head to the station.", next: "train_station", hope: 0 }
+            ]
+        },
+        train_station: {
+            text: "The platform is covered in a thick morning fog. Students in identical uniforms stand like ghosts. The warning chime rings out—a melancholy melody signaling the arrival of the train. You stand right near the yellow line.",
+            choices: [
+                { text: "Step forward into the crowded car. Accept the routine.", next: "school_routine", hope: 0 },
+                { text: "Look up at the sky. Notice a tiny patch of blue breaking through.", next: "sky_notice", hope: 1 }
+            ]
+        },
+        sky_notice: {
+            text: "The clouds are heavy, but they are moving. The wind feels cold against your face, reminding you that you are still here, still breathing.",
+            choices: [
+                { text: "Board the train with a slight sigh.", next: "school_routine", hope: 0 }
+            ]
+        },
+        school_routine: {
+            text: "Hours blur together. The teacher's voice sounds like it's drifting from underwater. During the break, you sit alone at your desk, tracing the wooden grain. Nobody looks your way. It feels like you are becoming transparent.",
+            choices: [
+                { text: "Go to the rooftop during the final sunset.", next: "rooftop_climax", hope: 0 }
+            ]
+        },
+        rooftop_climax: {
+            text: "The sky over Tokyo is bleeding a deep, industrial orange. The wind up here is violent, pulling at your hair. You look down at the tiny, distant world below. Everything feels completely out of reach. This is the edge.",
+            choices: [
+                { text: "Check your phone one last time.", next: "eval_ending", hope: 0 }
+            ]
+        },
+        ending_tragedy: {
+            text: "The screen is blank. The silence is absolute. The orange horizon fades into total darkness as you let go.",
+            choices: [
+                { text: "Restart the cycle.", next: "reset_game", hope: 0 }
+            ]
+        },
+        ending_hope: {
+            text: "Suddenly, a soft chime echoes. An old notification pops up from a distant friend across the ocean: 'Hey, I know it's early over there, but I saw something that reminded me of you. Are you awake?' Your fingers tremble. The sunrise slowly breaks over the skyline.",
+            choices: [
+                { text: "Type a reply. Stay.", next: "reset_game", hope: 0 }
+            ]
+        }
+    };
 
-            <div class="search-container">
-                <form action="result.html" method="get" class="search-box">
-                    <input type="text" name="q" id="search-bar" class="search-input" placeholder="Search internet..." oninput="showSuggestions(this.value)" autocomplete="off">
-                    <button type="submit" class="btn">Find</button>
-                </form>
-                <div id="suggestions" class="suggestions-box"></div>
-            </div>
-            
-            <p>✦ entry_001.log</p>
-            
-            <div class="user-info-card">
-                <div class="user-info-avatar" id="main-display-avatar">🍒</div>
-                <div class="user-info-text">
-                    <div class="user-info-name" id="main-display-name">Guest</div>
-                    <div id="main-display-bio">...</div>
-                </div>
-            </div>
-            
-            <div style="margin-top: 25px;">
-                <a class="btn">enter</a>
-                <a class="btn" style="background: #ffcbdc;">index</a>
-            </div>
+    function typeWriter(text, i, fnCallback) {
+        if (i < text.length) {
+            document.getElementById("text-box").innerHTML = text.substring(0, i+1) + '<span aria-hidden="true"></span>';
+            setTimeout(function() {
+                typeWriter(text, i + 1, fnCallback)
+            }, 25);
+        } else if (typeof fnCallback == 'function') {
+            setTimeout(fnCallback, 400);
+        }
+    }
 
-            <div class="status-bar">
-                <span>status: online</span>
-                <span>hits: 000001</span>
-            </div>
-        </div>
-    </div>
-
-    <div id="edit-window" class="window">
-        <div class="window-header">
-            <span class="window-title">edit_profile.exe</span>
-            <div class="window-dots"><span onclick="closeEdit()"></span><span></span><span></span></div>
-        </div>
-        <div class="window-body">
-            <div class="form-group">
-    <script>
-        const emojis = ['🍡', '🎀', '🥕', '🦋', '🪀', '🎱', '🍔', '🍒', '🥝', '🍏', '🍎', '🍧', '🍮', '🥮', '🍭', '🍰', '🌰', '🍯', '🍬', '🥛', '🍼', '🎸', '🩰', '🎨', '🥳'];
-        let selectedAvatar = '🍒';
-
-        const searchItems = [
-            "hatsune miku",
-            "apple pie recipe",
-            "neko",
-            "lookooooooo(^ω^)"
-        ];
-
-        function initAvatars(gridId, onClickCallback) {
-            const grid = document.getElementById(gridId);
-            grid.innerHTML = '';
-            emojis.forEach((emoji) => {
-                const item = document.createElement('div');
-                item.className = 'avatar-option';
-                if (emoji === selectedAvatar) item.classList.add('selected');
-                item.textContent = emoji;
-                item.onclick = () => {
-                    document.querySelectorAll(`#${gridId} .avatar-option`).forEach(el => el.classList.remove('selected'));
-                    item.classList.add('selected');
-                    onClickCallback(emoji);
-                };
-                grid.appendChild(item);
-            });
+    function renderStep(stepKey) {
+        if (stepKey === "eval_ending") {
+            stepKey = (internalHopeScore >= 2) ? "ending_hope" : "ending_tragedy";
+        }
+        
+        if (stepKey === "reset_game") {
+            internalHopeScore = 0;
+            stepKey = "start";
         }
 
-        function showSuggestions(val) {
-            const box = document.getElementById('suggestions');
-            box.innerHTML = '';
-            if (!val) {
-                box.style.display = 'none';
-                return;
-            }
-            const filtered = searchItems.filter(item => item.toLowerCase().includes(val.toLowerCase()));
-            if (filtered.length === 0) {
-                box.style.display = 'none';
-                return;
-            }
-            filtered.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'suggestion-item';
-                div.textContent = item;
-                div.onclick = () => {
-                    document.getElementById('search-bar').value = item;
-                    box.style.display = 'none';
-                    window.location.href = `result.html?q=${encodeURIComponent(item)}`;
+        const step = story[stepKey];
+        const choicesContainer = document.getElementById("choices");
+        choicesContainer.innerHTML = ""; 
+        
+        typeWriter(step.text, 0, function() {
+            step.choices.forEach(choice => {
+                const button = document.createElement("button");
+                button.className = "btn-choice";
+                button.innerText = choice.text;
+                button.onclick = () => {
+                    internalHopeScore += choice.hope;
+                    renderStep(choice.next);
                 };
-                box.appendChild(div);
+                choicesContainer.appendChild(button);
             });
-            box.style.display = 'block';
-        }
-
-        document.addEventListener('click', function(e) {
-            if (!e.target.classList.contains('search-input')) {
-                document.getElementById('suggestions').style.display = 'none';
-            }
         });
+    }
 
-        function saveRegistration() {
-            const username = document.getElementById('reg-username').value || 'lookooooooo';
-            const bio = document.getElementById('reg-bio').value || 'just another internet surfer';
-            
-            localStorage.setItem('nura_user', JSON.stringify({ username, bio, avatar: selectedAvatar }));
-            applyUserData(username, bio, selectedAvatar);
-            
-            document.getElementById('reg-window').style.display = 'none';
-            document.getElementById('main-window').style.display = 'block';
-            document.getElementById('profile-widget').style.display = 'flex';
-        }
+    /* ゲームの開始 */
+    renderStep('start');
+</script>
 
-        function applyUserData(name, bio, avatar) {
-            document.getElementById('widget-name').textContent = name;
-            document.getElementById('widget-avatar').textContent = avatar;
-            document.getElementById('main-display-name').textContent = name;
-            document.getElementById('main-display-bio').textContent = bio;
-            document.getElementById('main-display-avatar').textContent = avatar;
-        }
-
-        function openEdit() {
-            const data = JSON.parse(localStorage.getItem('nura_user'));
-            if (!data) return;
-
-            document.getElementById('edit-username').value = data.username;
-            document.getElementById('edit-bio').value = data.bio;
-            selectedAvatar = data.avatar;
-
-            initAvatars('edit-avatar-grid', (emoji) => { selectedAvatar = emoji; });
-            document.getElementById('edit-window').style.display = 'block';
-        }
-
-        function closeEdit() {
-            document.getElementById('edit-window').style.display = 'none';
-        }
-
-        function saveEdit() {
-            const username = document.getElementById('edit-username').value || 'lookooooooo';
-            const bio = document.getElementById('edit-bio').value || 'just another internet surfer';
-
-            localStorage.setItem('nura_user', JSON.stringify({ username, bio, avatar: selectedAvatar }));
-            applyUserData(username, bio, selectedAvatar);
-            closeEdit();
-        }
-
-        window.onload = function() {
-            const savedData = localStorage.getItem('nura_user');
-            initAvatars('reg-avatar-grid', (emoji) => { selectedAvatar = emoji; });
-
-            if (savedData) {
-                const data = JSON.parse(savedData);
-                selectedAvatar = data.avatar;
-                applyUserData(data.username, data.bio, data.avatar);
-                
-                document.getElementById('reg-window').style.display = 'none';
-                document.getElementById('main-window').style.display = 'block';
-                document.getElementById('profile-widget').style.display = 'flex';
-            }
-        };
-    </script>
+</body>
+</html>
