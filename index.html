@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>dawn — by lookoooooooo</title>
+    <title>決して訪れない夜明け</title>
     <style>
         body {
             margin: 0;
@@ -21,7 +21,7 @@
         #game-container {
             width: 85%;
             max-width: 650px;
-            background: rgba(10, 11, 20, 0.92);
+            background: rgba(10, 11, 20, 0.94);
             padding: 35px;
             border-radius: 4px;
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.85);
@@ -30,15 +30,17 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            transition: opacity 1s ease-in-out;
         }
 
         #image-box {
             width: 100%;
-            height: 220px;
+            height: 280px;
             border-radius: 2px;
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.05);
             background-color: #05060b;
+            position: relative;
         }
 
         #scene-image {
@@ -46,7 +48,23 @@
             height: 100%;
             object-fit: cover;
             opacity: 0;
-            transition: opacity 0.5s ease-in-out;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+
+        #scene-image.zoom-effect {
+            transform: scale(2.8) translateY(35%);
+        }
+
+        #character-sprite {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 90%;
+            object-fit: contain;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+            pointer-events: none;
         }
 
         #text-box {
@@ -81,6 +99,32 @@
             border-color: #827c94;
             padding-left: 22px;
         }
+
+        #credits-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.5s ease-in-out;
+            z-index: 9999;
+        }
+
+        #credits-text {
+            font-size: 1.25rem;
+            color: #e2e4f0;
+            text-align: center;
+            max-width: 80%;
+            line-height: 2;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
     </style>
 </head>
 <body>
@@ -88,9 +132,14 @@
 <div id="game-container">
     <div id="image-box">
         <img id="scene-image" src="" alt="scene background">
+        <img id="character-sprite" src="" alt="character sprite">
     </div>
     <div id="text-box"></div>
     <div class="choices-container" id="choices"></div>
+</div>
+
+<div id="credits-screen">
+    <div id="credits-text"></div>
 </div>
 
 <script>
@@ -98,76 +147,112 @@
 
     const story = {
         start: {
-            text: "4:32 AM. The cold blue light of dawn creeps through the small gap in your curtains. Your phone screen remains completely dark. Another day has found you, even though you didn't ask it to. Do you open your eyes?",
-            image: "https://shutterstock.com",
+            text: "4:32 AM. Part 1. The cold blue light of dawn creeps through the gap in your curtains. Your phone screen remains dark. As you look at the ceiling, you wonder... what will this new school be like? Will anyone talk to me? Will it be different?",
+            image: "morning.jpg", 
+            character: "hero-morning.png",
             choices: [
-                { text: "Take a deep, trembling breath and sit up.", next: "room_look", hope: 1 },
-                { text: "Keep them closed. Pretend you aren't here.", next: "stay_in_bed", hope: 0 }
+                { text: "Take a deep breath. Try to hope for the best.", next: "room_look", hope: 1 },
+                { text: "It won't be different. It never is.", next: "stay_in_bed", hope: 0 }
             ]
         },
         stay_in_bed: {
-            text: "The silence in the room is heavy. From somewhere down the street, the distant chime of a vending machine hums a low, lonely tune. Time drifts away without your permission.",
-            image: "https://shutterstock.com",
+            text: "You lie still under the heavy shadows. The low hum of the city outside feels miles away. You stare at the wall, lost in thoughts about the new school, dreading the moment you have to step inside.",
+            image: "night.jpg",
+            character: "hero-thinking.png",
             choices: [
-                { text: "Force your feet onto the cold tatami floor.", next: "room_look", hope: 0 }
+                { text: "Finally force yourself out of the futon.", next: "room_look", hope: 0 }
             ]
         },
         room_look: {
-            text: "Your school uniform is hanging on the closet door, looking sharp, empty, and heavy. The air smells faint, like old papers and yesterday's rain. Your backpack is waiting by the desk.",
-            image: "https://squarespace-cdn.com",
+            text: "You put on the sharp, unfamiliar uniform. Standing before the mirror, you gently attach a small, bright star hair clip. It's your favorite. A tiny piece of who you are. You grab your backpack.",
+            image: "tv-room.jpg",
+            character: "hero-school.png",
             choices: [
-                { text: "Pack your school materials. Put on your usual face.", next: "train_station", hope: 0 },
-                { text: "Notice a small origami crane you folded last spring.", next: "crane_stare", hope: 1 }
-            ]
-        },
-        crane_stare: {
-            text: "The paper is slightly dusty and faded. You remember the day you made it—a day when the air felt warmer. Your chest feels tight, but the memory lingers like a tiny spark.",
-            image: "https://squarespace-cdn.com",
-            choices: [
-                { text: "Leave it on the shelf and walk out the door.", next: "train_station", hope: 0 }
+                { text: "Walk out into the cold morning fog.", next: "train_station", hope: 0 }
             ]
         },
         train_station: {
-            text: "The station platform is engulfed in a thick, silent fog. Hundreds of students stand perfectly still, like shadows waiting for a train. The yellow line beneath your shoes feels like a boundary between two worlds. The signal bells begin to echo.",
+            text: "The station platform is silent, crowded with identical shadows. The chime for the oncoming train echoes through the mist. You trace the shape of the star clip in your hair, trying to stay grounded.",
             image: "https://tvtropes.org",
+            character: "hero-school.png",
             choices: [
-                { text: "Board the train. Let the crowd carry you away.", next: "school_routine", hope: 0 },
-                { text: "Look past the tracks. Notice a tiny green plant growing through the concrete.", next: "plant_notice", hope: 1 }
-            ]
-        },
-        plant_notice: {
-            text: "It is fragile, damp with morning dew, but it is standing against the wind. For a single second, the weight in your mind feels a fraction lighter.",
-            image: "https://tvtropes.org",
-            choices: [
-                { text: "Step into the train car as the doors open.", next: "school_routine", hope: 0 }
+                { text: "Step into the train. Head to the classroom.", next: "school_routine", hope: 0 }
             ]
         },
         school_routine: {
-            text: "The entire day passes like an old, scratched VHS tape. Voices blur into static. You sit by the window, watching the gray clouds move across the Tokyo sky. Nobody speaks to you. You feel completely invisible, fading into the background.",
-            image: "https://squarespace-cdn.com",
+            text: "The classroom is blindingly bright with afternoon sun. Suddenly, a group of classmates surrounds your desk. They look at you with cold, mocking grins. 'Hey, new girl,' one shouts, reaching out. 'Give us that pathetic star hair clip. Let us see it.'",
+            image: "classroom.jpg", 
+            character: "hero-school1.png",
             choices: [
-                { text: "Walk up to the school rooftop as the sun begins to set.", next: "rooftop_climax", hope: 0 }
+                { text: "Look away and freeze.", next: "school_break", hope: 0 },
+                { text: "Hold your breath, gripping the edge of the desk.", next: "school_break", hope: 1 }
+            ]
+        },
+        school_break: {
+            text: "They rip the clip straight out of your hair. Rough hands pull at it, laughing loudly. Before you can even speak, there is a sharp *snap*. They break your star clip right in front of your face, tossing the broken plastic onto the floor like trash.",
+            image: "classmates.jpg",
+            character: "hero-school2.png",
+            choices: [
+                { text: "Stare at the broken pieces on the floor.", next: "school_cry", hope: 0 }
+            ]
+        },
+        school_cry: {
+            text: "The cruel laughter echoes around the room, burning your ears. Tears spill over, hot and uncontrollable, blurring the golden sunlight. You sink to your knees, crying silently into your hands, completely humiliated.",
+            image: "classroom.jpg",
+            character: "hero-school3.png",
+            choices: [
+                { text: "Try to hide your face as they step closer...", next: "school_beaten", hope: 0 }
+            ]
+        },
+        school_beaten: {
+            text: "It escalates quickly. Shoves turn into heavy blows. When it's over, the classroom is completely empty and silent again. You lie broken on the cold floor, uniform torn, muscles aching. The golden light feels like a mockery.",
+            image: "classroom.jpg",
+            character: "hero-school4.png",
+            choices: [
+                { text: "Slowly push yourself up from the ground.", next: "walk_home", hope: 0 }
+            ]
+        },
+        walk_home: {
+            text: "The way back is crushing. A narrow path covered in dirty, melting snow under a toxic, industrial-yellow sky. The fences hem you in like prison walls, and the streetlights barely pierce the gloom. Every footstep feels like wading through mud.",
+            image: "road-home.jpg", 
+            character: "hero-school5.png",
+            choices: [
+                { text: "Endure the long walk back to your empty room.", next: "next_day_walk", hope: 0 }
+            ]
+        },
+        next_day_walk: {
+            text: "4:32 AM. Part 2. Another day forces its way into existence. School ends, and you find yourself walking back once again. The mood is even darker, the silence heavier. Your footsteps trace the same bleak path under the indifferent sky, your spirit fading further.",
+            image: "road-home.jpg", 
+            character: "hero-school-walk2.png", 
+            choices: [
+                { text: "Head towards the quiet school rooftop this evening.", next: "rooftop_climax", hope: 0 },
+                { text: "Try to find the strength to keep going home.", next: "rooftop_climax", hope: 1 }
             ]
         },
         rooftop_climax: {
-            text: "The evening sky is bleeding a deep, industrial violet. The wind at the edge is fierce, pulling at your uniform. Below you, the vast city looks beautiful, busy, and completely out of reach. You stand at the absolute limit of your strength.",
+            text: "The evening sky over Tokyo is bleeding a deep, industrial violet. The wind at the roof's edge is fierce, tearing at your uniform. The world below looks beautiful, busy, and completely out of reach. You have nothing left.",
             image: "https://pinimg.com",
+            character: "hero-school6.png",
             choices: [
-                { text: "Pull out your phone for one last glance.", next: "eval_ending", hope: 0 }
+                { text: "Pull out your phone for one last look.", next: "eval_ending", hope: 0 }
             ]
         },
         ending_tragedy: {
-            text: "The screen is silent. No messages. No signs. The violet horizon quietly surrenders to a dark, endless night as you step forward into the quiet.",
-            image: "https://pinimg.com",
+            text: "The screen is silent. No messages. No signs. You return to the washitsu. The heavy silence drops down from the ceiling. Looking up at the lamp, the dark room surrenders to absolute stillness. Only a quiet, hanging shadow remains, casting cold lines onto the tatami mats.",
+            image: "night.jpg",
+            character: "hero-school7.png",
+            zoom: true,
             choices: [
-                { text: "Restart the dawn.", next: "reset_game", hope: 0 }
+                { text: "Close your eyes.", next: "TRIGGER_CREDITS", hope: 0 }
             ]
         },
         ending_hope: {
-            text: "Suddenly, the phone vibrates. A notification appears from an old friend who moved across the ocean: 'Hey... I know it's late there, but I couldn't sleep. I missed talking to you. Are you doing okay?' The text blurs through your tears. The sky begins to break into a warm, gold horizon.",
+            text: "Suddenly, the phone vibrates. A notification appears from an old friend across the ocean: 'Hey... I know it's late there, but I couldn't sleep. I missed talking to you. Are you doing okay?' The text blurs through your tears. The sky begins to break into a warm, gold horizon.",
             image: "https://pinimg.com",
+            character: "hero-school8.png",
+            zoom: false,
             choices: [
-                { text: "Hold the phone tight. Stay for the morning.", next: "reset_game", hope: 0 }
+                { text: "Hold the phone tight. Stay for the morning.", next: "TRIGGER_CREDITS", hope: 0 }
             ]
         }
     };
@@ -183,32 +268,98 @@
         }
     }
 
-    function changeImage(src) {
-        const img = document.getElementById("scene-image");
-        img.style.opacity = 0;
+    function changeImage(sceneSrc, charSrc, shouldZoom) {
+        const sceneImg = document.getElementById("scene-image");
+        const charImg = document.getElementById("character-sprite");
+        
+        sceneImg.style.opacity = 0;
+        charImg.style.opacity = 0;
+        
+        if (shouldZoom) {
+            sceneImg.classList.add("zoom-effect");
+        } else {
+            sceneImg.classList.remove("zoom-effect");
+        }
+        
         setTimeout(() => {
-            img.src = src;
-            img.onload = () => {
-                img.style.opacity = 1;
+            sceneImg.src = sceneSrc;
+            charImg.src = charSrc;
+            
+            let loadedCount = 0;
+            const checkLoad = () => {
+                loadedCount++;
+                if (loadedCount === 2) {
+                    sceneImg.style.opacity = 1;
+                    charImg.style.opacity = 1;
+                }
             };
+            
+            sceneImg.onload = checkLoad;
+            charImg.onload = checkLoad;
+            
+            sceneImg.onerror = checkLoad;
+            charImg.onerror = checkLoad;
         }, 300);
+    }
+
+    function runCreditsSequence() {
+        const gameContainer = document.getElementById("game-container");
+        const creditsScreen = document.getElementById("credits-screen");
+        const creditsText = document.getElementById("credits-text");
+
+        gameContainer.style.opacity = 0;
+        setTimeout(() => {
+            gameContainer.style.display = "none";
+            creditsScreen.style.opacity = 1;
+            creditsScreen.style.pointerEvents = "auto";
+            
+            showCreditsLine("The dawn that will never come.", 2500, () => {
+                showCreditsLine("決して訪れない夜明け。", 2500, () => {
+                    showCreditsLine("Author: луууукууууу\n\nСпасибо за игру!", 4000, () => {
+                        setTimeout(() => {
+                            internalHopeScore = 0;
+                            gameContainer.style.display = "flex";
+                            setTimeout(() => {
+                                gameContainer.style.opacity = 1;
+                                creditsScreen.style.opacity = 0;
+                                creditsScreen.style.pointerEvents = "none";
+                                renderStep('start');
+                            }, 50);
+                        }, 1000);
+                    });
+                });
+            });
+        }, 1000);
+    }
+
+    function showCreditsLine(lineText, duration, onComplete) {
+        const creditsText = document.getElementById("credits-text");
+        creditsText.style.opacity = 0;
+        setTimeout(() => {
+            creditsText.innerText = lineText;
+            creditsText.style.opacity = 1;
+            setTimeout(() => {
+                creditsText.style.opacity = 0;
+                setTimeout(onComplete, 1000);
+            }, duration);
+        }, 500);
     }
 
     function renderStep(stepKey) {
         if (stepKey === "eval_ending") {
-            stepKey = (internalHopeScore >= 2) ? "ending_hope" : "ending_tragedy";
+            stepKey = (internalHopeScore >= 3) ? "ending_hope" : "ending_tragedy";
         }
         
-        if (stepKey === "reset_game") {
-            internalHopeScore = 0;
-            stepKey = "start";
+        if (stepKey === "TRIGGER_CREDITS") {
+            runCreditsSequence();
+            return;
         }
 
         const step = story[stepKey];
         const choicesContainer = document.getElementById("choices");
         choicesContainer.innerHTML = ""; 
         
-        changeImage(step.image);
+        changeImage(step.image, step.character, step.zoom || false);
         
         typeWriter(step.text, 0, function() {
             step.choices.forEach(choice => {
@@ -224,9 +375,7 @@
         });
     }
 
-    /* 挿絵付きゲームの開始 */
     renderStep('start');
 </script>
-
 </body>
 </html>
