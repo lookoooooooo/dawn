@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>決して訪れない夜明け</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            color: #c9cad6;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+        }
+
+        #main-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(180deg, #05060b 0%, #111322 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            z-index: 10000;
+            transition: opacity 0.6s ease-in-out;
+        }
+
+        #main-menu h1 {
+            font-size: 2rem;
+            color: #e2e4f0;
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 250px;
+        }
+
+        .btn-menu {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #b2b3c4;
+            padding: 15px;
+            font-family: inherit;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn-menu:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            border-color: #827c94;
+        }
+
+        #fullscreen-viewport {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.6s ease-in-out;
+        }
+
+        #scene-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            z-index: 1;
+        }
+
+        #character-sprite {
+            position: absolute;
+            bottom: 5vh;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 85vh;
+            object-fit: contain;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        #character-sprite.hang-crop {
+            transform: translateX(-50%) scale(1.6);
+            bottom: -20vh;
+        }
+
+        #control-panel {
+            position: absolute;
+            top: 3vh;
+            right: 5%;
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .btn-control {
+            background: rgba(10, 11, 20, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a39cb4;
+            padding: 8px 14px;
+            font-family: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-control:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        #interface-layer {
+            position: absolute;
+            bottom: 4vh;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 700px;
+            background: rgba(10, 11, 20, 0.93);
+            padding: 25px;
+            border-radius: 4px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            z-index: 3;
+        }
+
+        #speaker-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 5px;
+            margin: 0;
+        }
+
+        #speaker-tag {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #a39cb4;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        #ending-tag {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #ff79c6;
+            letter-spacing: 1px;
+            margin: 0;
+            display: none;
+        }
+
+        #text-box {
+            font-size: 1rem;
+            line-height: 1.6;
+            min-height: 85px;
+            color: #dcdde8;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-choice {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #b2b3c4;
+            padding: 13px 16px;
+            border-radius: 2px;
+            cursor: pointer;
+            text-align: left;
+            font-family: inherit;
+            font-size: 0.88rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-choice:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border-color: #827c94;
+            padding-left: 24px;
+        }
+
+        #credits-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.5s ease-in-out;
+            z-index: 9999;
+        }
+
+        #credits-text {
+            font-size: 1.3rem;
+            color: #e2e4f0;
+            text-align: center;
+            max-width: 80%;
+            line-height: 2.2;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            white-space: pre-line;
+        }
+    </style>
+</head>
+<body>
+
+<div id="main-menu">
+    <h1>決して訪れない夜明け</h1>
+    <div class="menu-buttons">
+        <button class="btn-menu" onclick="startGame()">Start Game</button>
+        <button class="btn-menu" id="load-btn" onclick="loadGame()">Load Scene</button>
+    </div>
+</div>
+
+<div id="fullscreen-viewport">
+    <div id="control-panel">
+        <button class="btn-control" onclick="saveGame()">Save Scene</button>
+        <button class="btn-control" onclick="stopToMenu()">Stop</button>
+    </div>
+    <img id="scene-background" src="" alt="scenery">
+    <img id="character-sprite" src="" alt="character">
+    
+    <div id="interface-layer">
+        <div id="speaker-container">
+            <p id="speaker-tag"></p>
+            <p id="ending-tag"></p>
+        </div>
+        <div id="text-box"></div>
+        <div class="choices-container" id="choices"></div>
+    </div>
+</div>
+
+<div id="credits-screen">
+    <div id="credits-text"></div>
+</div>
+<script>
+    let internalHopeScore = 0;
+    let currentStep = 'start';
+    let audioCtx = null;
+    let hasClip = true;
+    let activeHumGain = null;
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    function playTextBeep() {
+        if (!audioCtx) return;
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(115, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.012, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.035);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.035);
+    }
+
+    function playSnapSound() {
+        if (!audioCtx) return;
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(750, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(180, audioCtx.currentTime + 0.09);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.09);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.09);
+    }
+
+    function playSnowStep() {
+        if (!audioCtx) return;
+        let bufferSize = audioCtx.sampleRate * 0.16;
+        let buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        let data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+        let noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+        let filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 320;
+        filter.Q.value = 1.6;
+        let gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.16);
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        noise.start();
+    }
+
+    function playHitSound() {
+        if (!audioCtx) return;
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(90, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.12);
+    }
+
+    function playKnockSound() {
+        if (!audioCtx) return;
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(140, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(70, audioCtx.currentTime + 0.05);
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.15);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+    }
+
+    function startTVHum() {
+        if (!audioCtx || activeHumGain) return;
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(60, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        activeHumGain = gain;
+    }
+
+    function stopTVHum() {
+        if (activeHumGain) {
+            try { activeHumGain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3); } catch(e){}
+            activeHumGain = null;
+        }
+    }
+    const story = {
+        start: {
+            speaker: "Dakaranani",
+            text: "4:32 AM. Part 1. The alarm hasn't gone off yet, but the pale, frosty light of dawn is already creeping through the gaps of your curtains. Your phone lies flat next to you, completely silent. You look up at the ceiling. Another loop begins. What will this new school be like? Will it be different?",
+            image: "morning.jpg", 
+            character: "hero-morning.png",
+            choices: [
+                { text: "Take a deep breath. Try to hope for the best.", next: "wake_choice", hope: 1 },
+                { text: "It won't be different. It never is.", next: "stay_in_bed", hope: 0 }
+            ]
+        },
+        stay_in_bed: {
+            speaker: "Dakaranani",
+            text: "You lie still under the heavy shadows. The low hum of the city outside feels miles away. You stare at the wall, lost in dark thoughts, dreading the moment you have to step inside that building. My parents don't care about me anyway, they only care about money.",
+            image: "night.jpg",
+            character: "hero-thinking.png",
+            choices: [
+                { text: "Finally force yourself out of the futon.", next: "room_look_setup", hope: 0 }
+            ]
+        },
+        wake_choice: {
+            speaker: "Dakaranani",
+            text: "The room is incredibly quiet. You sit on the edge of the mattress, listening to the soft ticking of the wall clock. Today is the first day. You trace your fingers over your hands, thinking about your old friend Saigo, who had to move to another city. You miss her so much.",
+            image: "morning.jpg",
+            character: "hero-thinking.png",
+            choices: [
+                { text: "Look at your school uniform.", next: "room_look_setup", hope: 1 }
+            ]
+        },
+        room_look_setup: {
+            speaker: "Dakaranani",
+            text: "You put on the sharp, unfamiliar uniform. Standing before the mirror, you look at a small, bright star hair clip on the low table. It's your favorite. A tiny piece of who you were when Saigo was still here.",
+            image: "tv-room.jpg",
+            character: "hero-school.png",
+            choices: [
+                { text: "Carefully fasten the star clip in your hair.", next: "leave_house_clip", hope: 2 },
+                { text: "Leave it on the table. Walk out with messy, ruffed hair.", next: "leave_house_no_clip", hope: 0 }
+            ]
+        },
+        leave_house_clip: {
+            speaker: "Dakaranani",
+            text: "As you step outside, the crisp morning fog wraps around your uniform. You feel the clip in your hair, a small weight of comfort. You head toward the local station.",
+            image: "road-home.jpg",
+            character: "hero-school.png",
+            sound: "snow",
+            action: function() { hasClip = true; },
+            choices: [{ text: "Board the morning train.", next: "school_arrival_branch", hope: 0 }]
+        },
+        leave_house_no_clip: {
+            speaker: "Dakaranani",
+            text: "You leave the star clip behind. The cold wind pulls at your messy, unbrushed hair as you walk through the fog. The streets feel completely empty and indifferent to your existence.",
+            image: "road-home.jpg",
+            character: "hero-school.png",
+            sound: "snow",
+            action: function() { hasClip = false; },
+            choices: [{ text: "Board the morning train.", next: "school_arrival_branch", hope: 0 }]
+        },
+        school_arrival_branch: {
+            speaker: "???",
+            text: "The afternoon classroom is blindingly bright. Open textbooks lie on the wooden desks. You sit quietly, trying to disappear. Suddenly, a group of classmates crowds around your desk with cold, mocking eyes.",
+            image: "classroom.jpg",
+            character: "hero-school1.png",
+            choices: [{ text: "Look up at them.", next: "eval_school_bullying", hope: 0 }]
+        },
+        school_bully_clip: {
+            speaker: "???",
+            text: "'Hey, new girl,' one shouts, reaching out aggressively. 'What is that pathetic star clip in your hair? Give it here right now!' Before you can move, a rough hand rips it out, pulling your strands. They crowd nearby, flashing peace signs and taking a loud, cheerful photo together, completely ignoring your tears. Then—a sharp *snap*. They intentionally crush it into pieces, throwing it onto the floor like trash.",
+            image: "classmates.jpg",
+            character: "hero-school2.png",
+            sound: "snap",
+            choices: [{ text: "Look at the broken plastic on the floor.", next: "school_cry", hope: 0 }]
+        },
+        school_bully_no_clip: {
+            speaker: "???",
+            text: "'Look at her hair,' one sneers, laughing loudly. 'You look so messy and disgusting! Did you sleep on the street?' Another grabs your backpack from the desk, ripping the zipper open. 'Show us your bag! Let's see what trash you brought from your old town!' They dump all your things onto the floor, kicking your textbooks away.",
+            image: "classroom.jpg",
+            character: "hero-school2.png",
+            choices: [{ text: "Stare at your ruined belongings.", next: "school_cry", hope: 0 }]
+        },
+        school_cry: {
+            speaker: "Dakaranani",
+            text: "The cruel laughter rattles through your mind, blocking out everything else. Tears spill over, hot and completely uncontrollable, blurring the harsh sunlight. You sink to your knees right there, crying silently into your hands, completely isolated from everyone. My parents don't care about me anyway, they only care about money.",
+            image: "classroom.jpg",
+            character: "hero-school3.png",
+            choices: [
+                { text: "Try to block out their voices as they step closer...", next: "school_beaten", hope: 0 }
+            ]
+        },
+        school_beaten: {
+            speaker: "???",
+            text: "It escalates fast. Harsh shoves turn into heavy, painful blows. When they finally stop and leave, the room is dead silent. You lie broken and exhausted on the cold floor of the classroom, uniform torn, limbs aching. The bright sun outside feels like a complete insult to your pain.",
+            image: "classroom.jpg",
+            character: "hero-school4.png",
+            sound: "hit",
+            choices: [
+                { text: "Slowly force yourself up from the ground.", next: "walk_home", hope: 0 }
+            ]
+        },
+        walk_home: {
+            speaker: "Dakaranani",
+            text: "The walk back is pure agony. You drag your bruised body along the narrow pathway, hemmed in by rusted fences and dirty, melting snow. The industrial-yellow sky presses down on your shoulders. Every footstep feels heavier than the last.",
+            image: "road-home.jpg", 
+            character: "hero-school5.png",
+            sound: "snow",
+            choices: [
+                { text: "Finally open the door to your quiet room.", next: "next_day_walk", hope: 0 }
+            ]
+        },
+        next_day_walk: {
+            speaker: "Dakaranani",
+            text: "4:32 AM. Part 2. Another day forces its way into existence, but nothing changes. My parents don't care anyway, everything is about money. It just keeps happening every single day. School ends, and you find yourself walking back once again under the same toxic sky. Your mood is completely broken, filled with silent anger.",
+            image: "road-home.jpg", 
+            character: "hero-school-walk2.png", 
+            sound: "snow",
+            choices: [
+                { text: "Go straight back to your empty washitsu room.", next: "room_final", hope: 0 },
+                { text: "Try to think of Saigo and hold on to memories.", next: "room_final", hope: 2 }
+            ]
+        },
+        room_final: {
+            speaker: "Dakaranani",
+            text: "You are back in the washitsu. The old CRT television flickers quietly in the corner, throwing cold white static across the tatami. The refrigerator is completely empty. There is no money for food, and your stomach aches from hunger. On the low table lies a small, half-empty bottle of prescription pills. The silence drops down from the ceiling like a heavy fog.",
+            image: "night.jpg",
+            character: "hero-school-walk2.png",
+            choices: [
+                { text: "Let the silent anger take over. Fasten the rope to the ceiling lamp.", next: "eval_ending", hope: -5 },
+                { text: "Swallow all the remaining prescription pills.", next: "eval_ending", hope: -1 },
+                { text: "Lock the door. Lay down on the tatami and give up on food.", next: "eval_ending", hope: 1 },
+                { text: "Look at the flickering TV. Decide you don't care about them anymore.", next: "eval_ending", hope: 3 }
+            ]
+        },
+        ending_tragedy_hang: {
+            speaker: "???",
+            text: "The television continues to flicker with static, humming a low, endless tune in the dark room. The house is completely silent; your parents never came to check. Hanging beneath the quiet chandelier, a shadow stands motionless on the tatami mats—visible only from the waist down, fading away into the blue cold.",
+            image: "night.jpg",
+            character: "hero-hang.png",
+            sound: "tvhum",
+            endingNum: "3 / 5",
+            choices: [
+                { text: "Close your eyes.", next: "TRIGGER_CREDITS", hope: 0 }
+            ]
+        },
+        ending_tragedy_pills: {
+            speaker: "???",
+            text: "The static from the CRT screen illuminates the empty medicine bottle rolling across the floor. You feel cold, your thoughts slowing down as the dark room slips away. Nobody noticed. Nobody called. The shadows swallow the washitsu completely.",
+            image: "night.jpg",
+            character: "hero-thinking.png",
+            sound: "tvhum",
+            endingNum: "2 / 5",
+            choices: [
+                { text: "Let go.", next: "TRIGGER_CREDITS", hope: 0 }
+            ]
+        },
+        ending_tragedy_hunger: {
+            speaker: "???",
+            text: "Days blur into nights in the locked room. The ache of hunger slowly turns into a numb, hollow quiet. Your parents never ask, always busy counting coins. The television static hums an endless lullaby as your body grows completely cold on the tatami.",
+            image: "night.jpg",
+            character: "hero-morning.png",
+            sound: "tvhum",
+            endingNum: "1 / 5",
+            choices: [
+                { text: "Fade away.", next: "TRIGGER_CREDITS", hope: 0 }
+            ]
+        },
+        ending_hope_alone: {
+            speaker: "Dakaranani",
+            text: "You look at the empty room, the cold television, and the marks on your hands. Suddenly, something inside snaps. Let them laugh. Let them lock the doors. 'Let them think I'm crazy, at least I am happy!' You pull yourself up, completely ignoring their twisted world.",
+            image: "morning.jpg",
+            character: "hero-morning.png",
+            endingNum: "4 / 5",
+            choices: [
+                { text: "Step into your own tomorrow.", next: "TRIGGER_CREDITS", hope: 0 }
+            ]
+        },
+        ending_hope_saigo: {
+            speaker: "Dakaranani",
+            text: "Suddenly, a loud knock echoes through the house. You open the front door, shivering. Standing in the morning light is Saigo. She took the train from the other city just to find you. As she hugs you tightly, you realize she is your happiness, your only true reason to stay.",
+            image: "morning.jpg",
+            character: "hero-saigo.png",
+            sound: "knock",
+            endingNum: "5 / 5 (SECRET)",
+            choices: [
+                { text: "Hold her tight. The dawn is finally warm.", next: "TRIGGER_CREDITS", hope: 0 }
+            ]
+        }
+    };
+    function typeWriter(text, i, fnCallback) {
+        if (i < text.length) {
+            document.getElementById("text-box").innerHTML = text.substring(0, i+1) + '<span aria-hidden="true"></span>';
+            playTextBeep();
+            setTimeout(function() {
+                typeWriter(text, i + 1, fnCallback)
+            }, 30);
+        } else if (typeof fnCallback == 'function') {
+            setTimeout(fnCallback, 400);
+        }
+    }
+
+    function changeImage(sceneSrc, charSrc, shouldZoom) {
+        const sceneImg = document.getElementById("scene-background");
+        const charImg = document.getElementById("character-sprite");
+        
+        if (shouldZoom) {
+            charImg.classList.add("hang-crop");
+        } else {
+            charImg.classList.remove("hang-crop");
+        }
+        
+       
+        sceneImg.src = sceneSrc;
+        charImg.src = charSrc;
+        
+        sceneImg.style.opacity = 1;
+        charImg.style.opacity = 1;
+    }
+
+    function runCreditsSequence(endingType) {
+        const viewport = document.getElementById("fullscreen-viewport");
+        const creditsScreen = document.getElementById("credits-screen");
+
+        viewport.style.opacity = 0;
+        setTimeout(() => {
+            viewport.style.display = "none";
+            creditsScreen.style.opacity = 1;
+            creditsScreen.style.pointerEvents = "auto";
+            
+            let engLine = "";
+            let japLine = "";
+
+            if (endingType === "ending_tragedy_hang") {
+                engLine = "The dawn that will never come.";
+                japLine = "決して訪れない夜明け。";
+            } else if (endingType === "ending_tragedy_pills") {
+                engLine = "The dawn you will regret.";
+                japLine = "後悔する夜明け。";
+            } else if (endingType === "ending_tragedy_hunger") {
+                engLine = "The dawn that suffocates.";
+                japLine = "息苦しい夜明け。";
+            } else if (endingType === "ending_hope_alone") {
+                engLine = "The dawn that calms me.";
+                japLine = "私を落ち着かせる夜明け。";
+            } else if (endingType === "ending_hope_saigo") {
+                engLine = "The dawn that will last forever.";
+                japLine = "永遠に続く夜明け。";
+            }
+            
+            showCreditsLine(engLine, 2500, () => {
+                showCreditsLine(japLine, 2500, () => {
+                    showCreditsLine("Author: lookoooooooo\n\nThank you for playing!", 4000, () => {
+                        setTimeout(() => {
+                            localStorage.removeItem('dawn_saved_step');
+                            localStorage.removeItem('dawn_saved_hope');
+                            localStorage.removeItem('dawn_saved_clip');
+                            internalHopeScore = 0;
+                            stopTVHum();
+                            document.getElementById("main-menu").style.display = "flex";
+                            document.getElementById("main-menu").style.opacity = 1;
+                            creditsScreen.style.opacity = 0;
+                            creditsScreen.style.pointerEvents = "none";
+                        }, 1000);
+                    });
+                });
+            });
+        }, 1000);
+    }
+
+    function showCreditsLine(lineText, duration, onComplete) {
+        const creditsText = document.getElementById("credits-text");
+        creditsText.style.opacity = 0;
+        setTimeout(() => {
+            creditsText.innerText = lineText;
+            creditsText.style.opacity = 1;
+            setTimeout(() => {
+                creditsText.style.opacity = 0;
+                setTimeout(onComplete, 1000);
+            }, duration);
+        }, 500);
+    }
+
+    function handleSoundTrigger(soundType) {
+        if (!soundType) {
+            stopTVHum();
+            return;
+        }
+        initAudio();
+        if (soundType === "snap") {
+            stopTVHum();
+            playSnapSound();
+        } else if (soundType === "snow") {
+            stopTVHum();
+            let count = 0;
+            let interval = setInterval(() => {
+                playSnowStep();
+                count++;
+                if (count >= 3) clearInterval(interval);
+            }, 400);
+        } else if (soundType === "hit") {
+            stopTVHum();
+            playHitSound();
+        } else if (soundType === "knock") {
+            stopTVHum();
+            playKnockSound();
+        } else if (soundType === "tvhum") {
+            startTVHum();
+        }
+    }
+
+    function startGame() {
+        initAudio();
+        document.getElementById("main-menu").style.opacity = 0;
+        setTimeout(() => {
+            document.getElementById("main-menu").style.display = "none";
+            const vp = document.getElementById("fullscreen-viewport");
+            vp.style.display = "flex";
+            setTimeout(() => { vp.style.opacity = 1; }, 50);
+            internalHopeScore = 0;
+            hasClip = true;
+            currentStep = 'start';
+            renderStep(currentStep);
+        }, 600);
+    }
+
+    function stopToMenu() {
+        stopTVHum();
+        document.getElementById("fullscreen-viewport").style.opacity = 0;
+        setTimeout(() => {
+            document.getElementById("fullscreen-viewport").style.display = "none";
+            const mm = document.getElementById("main-menu");
+            mm.style.display = "flex";
+            setTimeout(() => { mm.style.opacity = 1; checkSaveState(); }, 50);
+        }, 600);
+    }
+
+    function saveGame() {
+        localStorage.setItem('dawn_saved_step', currentStep);
+        localStorage.setItem('dawn_saved_hope', internalHopeScore);
+        localStorage.setItem('dawn_saved_clip', hasClip ? "1" : "0");
+        alert("Scene saved successfully.");
+    }
+
+    function loadGame() {
+        const savedStep = localStorage.getItem('dawn_saved_step');
+        const savedHope = localStorage.getItem('dawn_saved_hope');
+        const savedClip = localStorage.getItem('dawn_saved_clip');
+        if (savedStep) {
+            initAudio();
+            document.getElementById("main-menu").style.opacity = 0;
+            setTimeout(() => {
+                document.getElementById("main-menu").style.display = "none";
+                const vp = document.getElementById("fullscreen-viewport");
+                vp.style.display = "flex";
+                setTimeout(() => { vp.style.opacity = 1; }, 50);
+                internalHopeScore = parseInt(savedHope) || 0;
+                hasClip = savedClip === "1";
+                currentStep = savedStep;
+                renderStep(currentStep);
+            }, 600);
+        }
+    }
+
+    function checkSaveState() {
+        const savedStep = localStorage.getItem('dawn_saved_step');
+        const loadBtn = document.getElementById("load-btn");
+        if (!savedStep) {
+            loadBtn.style.opacity = "0.4";
+            loadBtn.style.pointerEvents = "none";
+        } else {
+            loadBtn.style.opacity = "1";
+            loadBtn.style.pointerEvents = "auto";
+        }
+    }
+
+    function renderStep(stepKey) {
+        currentStep = stepKey;
+        
+        if (stepKey === "eval_school_bullying") {
+            stepKey = hasClip ? "school_bully_clip" : "school_bully_no_clip";
+            currentStep = stepKey;
+        }
+
+        if (stepKey === "eval_ending") {
+            if (internalHopeScore <= -4) {
+                stepKey = "ending_tragedy_hang";
+            } else if (internalHopeScore < 0) {
+                stepKey = "ending_tragedy_pills";
+            } else if (internalHopeScore <= 2) {
+                stepKey = "ending_tragedy_hunger";
+            } else if (internalHopeScore <= 4) {
+                stepKey = "ending_hope_alone";
+            } else {
+                stepKey = "ending_hope_saigo";
+            }
+            currentStep = stepKey;
+        }
+        
+        if (stepKey === "TRIGGER_CREDITS") {
+            runCreditsSequence(currentStep);
+            return;
+        }
+
+        const step = story[stepKey];
+        if (step.action) step.action();
+
+        document.getElementById("speaker-tag").innerText = step.speaker;
+        
+     
+        const endingTag = document.getElementById("ending-tag");
+        if (step.endingNum) {
+            endingTag.innerText = "Ending " + step.endingNum;
+            endingTag.style.display = "block";
+        } else {
+            endingTag.style.display = "none";
+        }
+
+        const choicesContainer = document.getElementById("choices");
+        choicesContainer.innerHTML = ""; 
+        
+        changeImage(step.image, step.character, step.zoom || false);
+        handleSoundTrigger(step.sound);
+        
+        typeWriter(step.text, 0, function() {
+            step.choices.forEach(choice => {
+                const button = document.createElement("button");
+                button.className = "btn-choice";
+                button.innerText = choice.text;
+                button.onclick = () => {
+                    initAudio();
+                    internalHopeScore += choice.hope;
+                    renderStep(choice.next);
+                };
+                choicesContainer.appendChild(button);
+            });
+        });
+    }
+
+    window.onload = checkSaveState;
+</script>
+</body>
+</html>
